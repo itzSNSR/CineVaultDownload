@@ -50,6 +50,19 @@ python -m http.server 8000
 Open <http://localhost:8000/>. The version badge reads `version.json` from the app
 repository over HTTPS; without network access it falls back to the static `v4.6` text.
 
+## Motion
+
+The page carries a small, dependency-free motion system applied from the
+[LottieFiles motion-design-skill](https://github.com/lottiefiles/motion-design-skill):
+a staggered hero entrance (40–320 ms), scroll reveals with 50–70 ms stagger, gentle
+ambient drift on the glows and floating cards, and press/hover feedback. Personality is
+Premium — signature easing `cubic-bezier(.4,0,.2,1)`, durations 140/380/620 ms.
+
+Only `translate`, `scale` and `opacity` animate, so nothing shifts layout. Reveal classes
+are added by JavaScript alone and all motion sits behind
+`@media (prefers-reduced-motion: no-preference)`, so reduced-motion and no-JS visitors get
+the static page.
+
 ## GitHub Pages
 
 Repository **Settings → Pages**:

@@ -8,3 +8,39 @@
 .footer-links a{min-height:32px;display:inline-flex;align-items:center}
 .footer-lower{padding-bottom:25px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+
+/* ---------- Motion system ----------
+   Applied from LottieFiles motion-design-skill (MIT).
+   Personality: Premium. Signature easing cubic-bezier(.4,0,.2,1), entrances use
+   MD3 Emphasized. Durations: quick 140ms / standard 380ms / slow 620ms.
+   Layers: primary (hero copy), secondary (phone, floating cards, cards), ambient
+   (glows, idle bobbing). Only translate/scale/opacity animate, and the individual
+   transform properties are used so the existing responsive transforms survive. */
+:root{--dur-quick:140ms;--dur-base:380ms;--dur-slow:620ms;--ease-entrance:cubic-bezier(.05,.7,.1,1);--ease-premium:cubic-bezier(.4,0,.2,1);--ease-sine:cubic-bezier(.37,0,.63,1)}
+@keyframes cv-rise{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
+@keyframes cv-emerge{from{opacity:0;translate:0 26px;scale:.97}to{opacity:1;translate:0 0;scale:1}}
+@keyframes cv-bob{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@keyframes cv-drift-a{0%,100%{translate:0 0;scale:1}50%{translate:18px -14px;scale:1.04}}
+@keyframes cv-drift-b{0%,100%{translate:0 0}50%{translate:-14px 16px}}
+@keyframes cv-pulse{0%,100%{scale:1;opacity:1}50%{scale:1.18;opacity:.7}}
+@keyframes cv-menu{from{opacity:0;translate:0 -8px}to{opacity:1;translate:0 0}}
+.btn{transition:background var(--dur-quick) linear,border-color var(--dur-quick) linear,transform var(--dur-quick) var(--ease-premium),box-shadow var(--dur-base) var(--ease-premium)}
+.btn:active{transform:translateY(0) scale(.985)}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.experience-card,.platform-card{transition:border-color var(--dur-base) var(--ease-premium),translate var(--dur-base) var(--ease-premium)}.experience-card:hover,.platform-card:hover{translate:0 -3px}}
+@media(prefers-reduced-motion:no-preference){
+  .hero-copy>*{animation:cv-rise var(--dur-slow) var(--ease-entrance) both}
+  .hero-copy>:nth-child(1){animation-delay:40ms}
+  .hero-copy>:nth-child(2){animation-delay:110ms}
+  .hero-copy>:nth-child(3){animation-delay:180ms}
+  .hero-copy>:nth-child(4){animation-delay:250ms}
+  .hero-copy>:nth-child(5){animation-delay:320ms}
+  .hero-art{animation:cv-emerge 820ms var(--ease-entrance) 200ms both}
+  .float-watch{animation:cv-bob 6800ms var(--ease-sine) 900ms infinite}
+  .float-live{animation:cv-bob 8200ms var(--ease-sine) 1500ms infinite}
+  .hero-glow-one{animation:cv-drift-a 24s var(--ease-sine) infinite}
+  .hero-glow-two{animation:cv-drift-b 19s var(--ease-sine) infinite}
+  .status-dot{animation:cv-pulse 2400ms var(--ease-sine) infinite}
+  .mobile-menu:not([hidden]){animation:cv-menu var(--dur-base) var(--ease-entrance) both}
+  .js-reveal{opacity:0;translate:0 18px;transition:opacity var(--dur-base) var(--ease-entrance),translate var(--dur-base) var(--ease-entrance);transition-delay:calc(var(--reveal-delay,0)*1ms)}
+  .js-reveal.is-in{opacity:1;translate:0 0}
+}

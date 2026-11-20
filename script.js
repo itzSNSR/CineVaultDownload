@@ -73,6 +73,69 @@
     });
   }
 
+  /* Motion: premium entrance and reveal system, applied from LottieFiles
+     motion-design-skill. Content is only hidden once this script has opted in,
+     so no-JS and reduced-motion visitors always get the static page. */
+  var reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var revealObserver = null;
+  var revealItems = [];
+
+  function addReveal(el, delay) {
+    el.classList.add('js-reveal');
+    el.style.setProperty('--reveal-delay', String(delay));
+    revealItems.push(el);
+    revealObserver.observe(el);
+  }
+
+  function initMotion() {
+    if (reduceQuery.matches || !('IntersectionObserver' in window)) return;
+    var stagger = window.innerWidth <= 750 ? 50 : 70;
+    var groups = [
+      ['.experience-grid', true],
+      ['.feature-grid', true],
+      ['.platform-grid', true],
+      ['.faq-list', true],
+      ['.section-topline', false],
+      ['.section-heading-row', false],
+      ['.features-heading', false],
+      ['.platform-heading', false],
+      ['.install-panel', false],
+      ['.faq-container > div:first-child', false],
+      ['.footer-upper', false],
+      ['.footer-lower', false]
+    ];
+
+    revealObserver = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isIntersecting) continue;
+        entries[i].target.classList.add('is-in');
+        revealObserver.unobserve(entries[i].target);
+      }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+
+    groups.forEach(function (spec) {
+      var nodes = document.querySelectorAll(spec[0]);
+      Array.prototype.forEach.call(nodes, function (node) {
+        if (!spec[1]) {
+          addReveal(node, 0);
+          return;
+        }
+        Array.prototype.forEach.call(node.children, function (child, index) {
+          addReveal(child, index * stagger);
+        });
+      });
+    });
+  }
+
+  initMotion();
+
+  if (reduceQuery.addEventListener) {
+    reduceQuery.addEventListener('change', function (event) {
+      if (!event.matches) return;
+      for (var i = 0; i < revealItems.length; i++) revealItems[i].classList.add('is-in');
+    });
+  }
+
   /* Latest version from version.json; the static markup stays accurate if the
      network, CORS or the manifest itself is unavailable. */
   var versionPill = document.getElementById('hero-version');
