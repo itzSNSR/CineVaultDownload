@@ -77,18 +77,43 @@
      motion-design-skill. Content is only hidden once this script has opted in,
      so no-JS and reduced-motion visitors always get the static page. */
   var reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var revealObserver = null;
   var revealItems = [];
+  var revealQueued = false;
 
   function addReveal(el, delay) {
     el.classList.add('js-reveal');
     el.style.setProperty('--reveal-delay', String(delay));
     revealItems.push(el);
-    revealObserver.observe(el);
+  }
+
+  /* Geometry instead of IntersectionObserver: Chromium defers intersection
+     notifications while the document is hidden, which could otherwise leave
+     sections invisible when the page is opened in a background tab. */
+  function revealInView() {
+    revealQueued = false;
+    if (reduceQuery.matches) return;
+    var fold = (window.innerHeight || document.documentElement.clientHeight) * 0.92;
+    for (var i = revealItems.length - 1; i >= 0; i--) {
+      if (revealItems[i].getBoundingClientRect().top < fold) {
+        revealItems[i].classList.add('is-in');
+        revealItems.splice(i, 1);
+      }
+    }
+  }
+
+  function queueRevealCheck() {
+    if (revealQueued || !revealItems.length) return;
+    /* rAF is paused in background documents, so resolve immediately there. */
+    if (document.hidden || !window.requestAnimationFrame) {
+      revealInView();
+      return;
+    }
+    revealQueued = true;
+    window.requestAnimationFrame(revealInView);
   }
 
   function initMotion() {
-    if (reduceQuery.matches || !('IntersectionObserver' in window)) return;
+    if (reduceQuery.matches) return;
     var stagger = window.innerWidth <= 750 ? 50 : 70;
     var groups = [
       ['.experience-grid', true],
@@ -105,14 +130,6 @@
       ['.footer-lower', false]
     ];
 
-    revealObserver = new IntersectionObserver(function (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (!entries[i].isIntersecting) continue;
-        entries[i].target.classList.add('is-in');
-        revealObserver.unobserve(entries[i].target);
-      }
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
-
     groups.forEach(function (spec) {
       var nodes = document.querySelectorAll(spec[0]);
       Array.prototype.forEach.call(nodes, function (node) {
@@ -125,6 +142,14 @@
         });
       });
     });
+
+    revealInView();
+    window.addEventListener('scroll', queueRevealCheck, { passive: true });
+    window.addEventListener('resize', queueRevealCheck);
+    window.addEventListener('pageshow', revealInView);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) revealInView();
+    });
   }
 
   initMotion();
@@ -132,7 +157,7 @@
   if (reduceQuery.addEventListener) {
     reduceQuery.addEventListener('change', function (event) {
       if (!event.matches) return;
-      for (var i = 0; i < revealItems.length; i++) revealItems[i].classList.add('is-in');
+      while (revealItems.length) revealItems.pop().classList.add('is-in');
     });
   }
 
